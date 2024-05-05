@@ -20,6 +20,12 @@
 #include "iceoryx_posh/internal/mepoo/mem_pool.hpp"
 #include "iceoryx_posh/roudi/introspection_types.hpp"
 
+#ifdef REUSE_ICEORYX_SHM_FILE
+#define ROUDI_MEMORY_OPEN_MODE OPEN_OR_CREATE
+#else
+#define ROUDI_MEMORY_OPEN_MODE PURGE_AND_CREATE
+#endif
+
 namespace iox
 {
 namespace roudi
@@ -27,7 +33,7 @@ namespace roudi
 DefaultRouDiMemory::DefaultRouDiMemory(const RouDiConfig_t& roudiConfig) noexcept
     : m_introspectionMemPoolBlock(introspectionMemPoolConfig())
     , m_segmentManagerBlock(roudiConfig)
-    , m_managementShm(SHM_NAME, posix::AccessMode::READ_WRITE, posix::OpenMode::PURGE_AND_CREATE)
+    , m_managementShm(SHM_NAME, posix::AccessMode::READ_WRITE, posix::OpenMode::ROUDI_MEMORY_OPEN_MODE)
 {
     m_managementShm.addMemoryBlock(&m_introspectionMemPoolBlock).or_else([](auto) {
         errorHandler(

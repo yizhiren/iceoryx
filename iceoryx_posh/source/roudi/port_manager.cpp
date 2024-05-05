@@ -62,6 +62,8 @@ PortManager::PortManager(RouDiMemoryInterface* roudiMemoryInterface) noexcept
     }
     auto introspectionMemoryManager = maybeIntrospectionMemoryManager.value();
 
+    deletePortsOfProcess(IPC_CHANNEL_ROUDI_NAME);
+
     popo::PublisherOptions registryPortOptions;
     registryPortOptions.historyCapacity = 1U;
     registryPortOptions.nodeName = iox::NodeName_t("Service Registry");
@@ -131,6 +133,8 @@ void PortManager::handlePublisherPorts() noexcept
         if (publisherPort.toBeDestroyed())
         {
             destroyPublisherPort(publisherPortData);
+        } else {
+            m_portIntrospection.addPublisherIfNotExist(*publisherPortData);
         }
     }
 }
@@ -138,7 +142,6 @@ void PortManager::handlePublisherPorts() noexcept
 void PortManager::doDiscoveryForPublisherPort(PublisherPortRouDiType& publisherPort) noexcept
 {
     publisherPort.tryGetCaProMessage().and_then([this, &publisherPort](auto caproMessage) {
-        m_portIntrospection.reportMessage(caproMessage);
         if (capro::CaproMessageType::OFFER == caproMessage.m_type)
         {
             this->addPublisherToServiceRegistry(caproMessage.m_serviceDescription);
@@ -176,6 +179,8 @@ void PortManager::handleSubscriberPorts() noexcept
         if (subscriberPort.toBeDestroyed())
         {
             destroySubscriberPort(subscriberPortData);
+        } else {
+            m_portIntrospection.addSubscriberIfNotExist(*subscriberPortData);
         }
     }
 }

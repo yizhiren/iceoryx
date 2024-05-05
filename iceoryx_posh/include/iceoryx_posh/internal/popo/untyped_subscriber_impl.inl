@@ -50,6 +50,15 @@ inline void UntypedSubscriberImpl<BaseSubscriberType>::release(const void* const
 }
 
 template <typename BaseSubscriberType>
+inline void UntypedSubscriberImpl<BaseSubscriberType>::releaseTo(const void* const userPayload,
+    mepoo::SharedChunk& toChunk) noexcept
+{
+    auto chunkHeader = mepoo::ChunkHeader::fromUserPayload(userPayload);
+    port().releaseChunkTo(chunkHeader, toChunk);
+}
+
+
+template <typename BaseSubscriberType>
 inline UntypedSubscriberImpl<BaseSubscriberType>::~UntypedSubscriberImpl() noexcept
 {
     BaseSubscriberType::m_trigger.reset();

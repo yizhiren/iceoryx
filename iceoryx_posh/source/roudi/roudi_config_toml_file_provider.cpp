@@ -149,7 +149,7 @@ TomlRouDiConfigFileProvider::parse() noexcept
              iox::posix::PosixGroup::string_t(iox::cxx::TruncateToCapacity, writer),
              mempoolConfig});
     }
-
+    LogInfo() << "TomlRouDiConfigFileProvider parsed segment count: " << parsedConfig.m_sharedMemorySegments.size();
     return iox::cxx::success<iox::RouDiConfig_t>(parsedConfig);
 }
 } // namespace config

@@ -15,39 +15,32 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef IOX_POSH_RUNTIME_IPC_RUNTIME_INTERFACE_HPP
-#define IOX_POSH_RUNTIME_IPC_RUNTIME_INTERFACE_HPP
+#ifndef IOX_POSH_RUNTIME_IPC_RUNTIME_INTERFACE_WRAPPER_HPP
+#define IOX_POSH_RUNTIME_IPC_RUNTIME_INTERFACE_WRAPPER_HPP
 
-#include "iceoryx_posh/internal/runtime/ipc_interface_creator.hpp"
-#include "iceoryx_posh/internal/runtime/ipc_interface_user.hpp"
+#include "iceoryx_posh/internal/runtime/ipc_runtime_interface.hpp"
 
 namespace iox
 {
 namespace runtime
 {
-
-const std::function<void()> DEFAULT_ROUDI_NOT_AVAILABLE_CALLBACK = [](){
-  LogFatal() << "Timeout registering at RouDi. Is RouDi running?";
-};
-
-class IpcRuntimeInterface
+class IpcRuntimeInterfaceWrapper
 {
   public:
     /// @brief Runtime Interface for the own IPC channel and the one to the RouDi daemon
     /// @param[in] roudiName name of the RouDi IPC channel
     /// @param[in] runtimeName name of the application's runtime and its IPC channel
     /// @param[in] roudiWaitingTimeout timeout for searching the RouDi IPC channel
-    IpcRuntimeInterface(const RuntimeName_t& roudiName,
+    IpcRuntimeInterfaceWrapper(const RuntimeName_t& roudiName,
                         const RuntimeName_t& runtimeName,
-                        const units::Duration roudiWaitingTimeout,
-                        const std::function<void()>& roudiNotFoundCallback = DEFAULT_ROUDI_NOT_AVAILABLE_CALLBACK) noexcept;
-    ~IpcRuntimeInterface() noexcept = default;
+                        const units::Duration roudiWaitingTimeout) noexcept;
+    ~IpcRuntimeInterfaceWrapper() noexcept = default;
 
     /// @brief Not needed therefore deleted
-    IpcRuntimeInterface(const IpcRuntimeInterface&) = delete;
-    IpcRuntimeInterface& operator=(const IpcRuntimeInterface&) = delete;
-    IpcRuntimeInterface(IpcRuntimeInterface&&) = delete;
-    IpcRuntimeInterface& operator=(IpcRuntimeInterface&&) = delete;
+    IpcRuntimeInterfaceWrapper(const IpcRuntimeInterfaceWrapper&) = delete;
+    IpcRuntimeInterfaceWrapper& operator=(const IpcRuntimeInterfaceWrapper&) = delete;
+    IpcRuntimeInterfaceWrapper(IpcRuntimeInterfaceWrapper&&) = delete;
+    IpcRuntimeInterfaceWrapper& operator=(IpcRuntimeInterfaceWrapper&&) = delete;
 
     /// @brief sends the keep alive trigger to the RouDi daemon
     /// @return true if sending was successful, false if not
@@ -72,26 +65,22 @@ class IpcRuntimeInterface
     uint64_t getSegmentId() const noexcept;
 
   private:
-    enum class RegAckResult
-    {
-        SUCCESS,
-        TIMEOUT
-    };
-
-    void waitForRoudi(cxx::DeadlineTimer& timer) noexcept;
-
-    RegAckResult waitForRegAck(const int64_t transmissionTimestamp) noexcept;
+    void tryReconnect() noexcept;
 
   private:
-    RuntimeName_t m_runtimeName;
-    cxx::optional<rp::BaseRelativePointer::offset_t> m_segmentManagerAddressOffset;
-    IpcInterfaceCreator m_AppIpcInterface;
-    IpcInterfaceUser m_RoudiIpcInterface;
-    uint64_t m_shmTopicSize{0U};
-    uint64_t m_segmentId{0U};
+    const RuntimeName_t m_roudiName;
+    const RuntimeName_t m_runtimeName;
+    const units::Duration m_roudiReconnectTimeout;
+    const int m_max_keepalive_failure_try_count;
+    cxx::optional<IpcRuntimeInterface> m_ipcRuntimeInterface;
+    const size_t m_shmTopicSize;
+    const uint64_t m_segmentId;
+    
+    int m_keepalive_failure_count;
+    bool m_connectionValid;
 };
 
 } // namespace runtime
 } // namespace iox
 
-#endif // IOX_POSH_RUNTIME_IPC_RUNTIME_INTERFACE_HPP
+#endif // IOX_POSH_RUNTIME_IPC_RUNTIME_INTERFACE_WRAPPER_HPP

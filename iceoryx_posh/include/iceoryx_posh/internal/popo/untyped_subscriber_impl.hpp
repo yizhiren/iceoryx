@@ -67,6 +67,17 @@ class UntypedSubscriberImpl : public BaseSubscriberType
     ///
     void release(const void* const userPayload) noexcept;
 
+    ///
+    /// @brief Releases the ownership of the chunk provided by the user-payload pointer.
+    /// @param userPayload pointer to the user-payload of the chunk to be released
+    /// @param toChunk to receive the released chunk
+    /// @details The userPayload pointer must have been previously provided by take and
+    ///          not have been already released.
+    ///          The chunk must not be accessed afterwards as its memory may have
+    ///          been reclaimed.
+    ///
+    void releaseTo(const void* const userPayload, mepoo::SharedChunk& toChunk) noexcept;
+
   protected:
     using BaseSubscriber::port;
 };

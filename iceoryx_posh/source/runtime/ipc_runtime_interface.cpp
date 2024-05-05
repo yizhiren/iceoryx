@@ -28,7 +28,8 @@ namespace runtime
 {
 IpcRuntimeInterface::IpcRuntimeInterface(const RuntimeName_t& roudiName,
                                          const RuntimeName_t& runtimeName,
-                                         const units::Duration roudiWaitingTimeout) noexcept
+                                         const units::Duration roudiWaitingTimeout,
+                                         const std::function<void()>& roudiNotFoundCallback) noexcept
     : m_runtimeName(runtimeName)
     , m_AppIpcInterface(runtimeName)
     , m_RoudiIpcInterface(roudiName)
@@ -127,8 +128,7 @@ IpcRuntimeInterface::IpcRuntimeInterface(const RuntimeName_t& roudiName,
     switch (regState)
     {
     case RegState::WAIT_FOR_ROUDI:
-        LogFatal() << "Timeout registering at RouDi. Is RouDi running?";
-        errorHandler(Error::kIPC_INTERFACE__REG_ROUDI_NOT_AVAILABLE);
+        errorHandler(Error::kIPC_INTERFACE__REG_ROUDI_NOT_AVAILABLE, roudiNotFoundCallback);
         break;
     case RegState::SEND_REGISTER_REQUEST:
         errorHandler(Error::kIPC_INTERFACE__REG_UNABLE_TO_WRITE_TO_ROUDI_CHANNEL);

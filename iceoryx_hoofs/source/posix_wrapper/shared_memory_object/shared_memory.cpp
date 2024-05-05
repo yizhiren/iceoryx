@@ -59,7 +59,6 @@ cxx::expected<SharedMemory, SharedMemoryError> SharedMemoryBuilder::create() noe
                   << ", sizeInBytes = " << m_size << " ]" << std::endl;
     };
 
-
     // on qnx the current working directory will be added to the /dev/shmem path if the leading slash is missing
     if (m_name.empty())
     {
@@ -114,6 +113,9 @@ cxx::expected<SharedMemory, SharedMemoryError> SharedMemoryBuilder::create() noe
                 {
                     constexpr bool HAS_NO_OWNERSHIP = false;
                     sharedMemoryFileHandle = result->value;
+                    std::clog << "SharedMemoryBuilder open " << m_name
+                              << ", file handler " << sharedMemoryFileHandle
+                              << std::endl;
                     return cxx::success<SharedMemory>(SharedMemory(m_name, sharedMemoryFileHandle, HAS_NO_OWNERSHIP));
                 }
             }
@@ -122,6 +124,10 @@ cxx::expected<SharedMemory, SharedMemoryError> SharedMemoryBuilder::create() noe
             return cxx::error<SharedMemoryError>(SharedMemory::errnoToEnum(result.get_error().errnum));
         }
         sharedMemoryFileHandle = result->value;
+        std::clog << "SharedMemoryBuilder create " << m_name
+                  << ", file handler " << sharedMemoryFileHandle
+                  << std::endl;
+        
     }
 
     const bool hasOwnership = (m_openMode == OpenMode::EXCLUSIVE_CREATE || m_openMode == OpenMode::PURGE_AND_CREATE
@@ -251,6 +257,9 @@ bool SharedMemory::close() noexcept
 {
     if (m_handle != INVALID_HANDLE)
     {
+        std::clog << "SharedMemory close " << m_name
+                  << ", handler " << m_handle
+                  << std::endl;
         auto call = posixCall(iox_close)(m_handle).failureReturnValue(INVALID_HANDLE).evaluate().or_else([](auto& r) {
             std::cerr << "Unable to close SharedMemory filedescriptor (close failed) : " << r.getHumanReadableErrnum()
                       << std::endl;

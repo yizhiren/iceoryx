@@ -110,6 +110,12 @@ class ChunkSender : public ChunkDistributor<typename ChunkSenderDataType::ChunkD
     /// @param[in] chunkHeader, pointer to the ChunkHeader to release
     void release(const mepoo::ChunkHeader* const chunkHeader) noexcept;
 
+    /// @brief Release last chunk and return it
+    mepoo::SharedChunk releaseLastChunk() noexcept;
+
+    /// @brief send specified chunk to all connected ChunkQueuePopper
+    uint64_t sendChunk(mepoo::SharedChunk chunk) noexcept;
+
     /// @brief Send an allocated chunk to all connected ChunkQueuePopper
     /// @param[in] chunkHeader, pointer to the ChunkHeader to send; the ownership of the pointer is transferred to this
     /// method

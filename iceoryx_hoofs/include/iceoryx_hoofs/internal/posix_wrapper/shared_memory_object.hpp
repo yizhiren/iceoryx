@@ -60,6 +60,8 @@ class SharedMemoryObject : public DesignPattern::Creation<SharedMemoryObject, Sh
     int getFileHandle() const noexcept;
     bool hasOwnership() const noexcept;
 
+    void reopen() noexcept;
+
     friend class DesignPattern::Creation<SharedMemoryObject, SharedMemoryObjectError>;
 
   private:
@@ -72,9 +74,15 @@ class SharedMemoryObject : public DesignPattern::Creation<SharedMemoryObject, Sh
                                                       | cxx::perms::group_read | cxx::perms::group_write) noexcept;
 
     bool isInitialized() const noexcept;
-
+    void open() noexcept;
   private:
+    SharedMemory::Name_t m_name;
     uint64_t m_memorySizeInBytes;
+    AccessMode m_accessMode;
+    OpenMode m_openMode;
+    const void* m_baseAddressHint;
+    cxx::perms m_permissions;
+    
     cxx::optional<SharedMemory> m_sharedMemory;
     cxx::optional<MemoryMap> m_memoryMap;
     cxx::optional<Allocator> m_allocator;

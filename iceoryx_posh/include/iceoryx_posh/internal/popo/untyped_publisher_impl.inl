@@ -32,6 +32,18 @@ inline UntypedPublisherImpl<BasePublisherType>::UntypedPublisherImpl(const capro
 }
 
 template <typename BasePublisherType>
+inline mepoo::SharedChunk UntypedPublisherImpl<BasePublisherType>::takeLastChunk() noexcept
+{
+    return port().takeLastChunk();
+}
+
+template <typename BasePublisherType>
+inline uint64_t UntypedPublisherImpl<BasePublisherType>::publish(mepoo::SharedChunk chunk) noexcept
+{
+    return port().sendChunk(chunk);
+}
+
+template <typename BasePublisherType>
 inline void UntypedPublisherImpl<BasePublisherType>::publish(void* const userPayload) noexcept
 {
     auto chunkHeader = mepoo::ChunkHeader::fromUserPayload(userPayload);

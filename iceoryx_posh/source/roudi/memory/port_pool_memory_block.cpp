@@ -32,17 +32,38 @@ PortPoolMemoryBlock::~PortPoolMemoryBlock() noexcept
 
 uint64_t PortPoolMemoryBlock::size() const noexcept
 {
-    return sizeof(PortPoolData);
+    return cxx::align(static_cast<uint64_t>(sizeof(size_t)), mepoo::MemPool::CHUNK_MEMORY_ALIGNMENT)
+         + cxx::align(static_cast<uint64_t>(sizeof(PortPoolData)), mepoo::MemPool::CHUNK_MEMORY_ALIGNMENT);
 }
 
 uint64_t PortPoolMemoryBlock::alignment() const noexcept
 {
-    return alignof(PortPoolData);
+    return algorithm::max(
+        static_cast<uint64_t>(alignof(PortPoolData)),
+        static_cast<uint64_t>(alignof(size_t)),
+        mepoo::MemPool::CHUNK_MEMORY_ALIGNMENT);
 }
 
 void PortPoolMemoryBlock::onMemoryAvailable(cxx::not_null<void*> memory) noexcept
 {
-    m_portPoolData = new (memory) PortPoolData;
+    posix::Allocator allocator(memory, size());
+    auto init_finish_flag = (size_t*)allocator.allocate(sizeof(size_t), alignof(size_t));
+    if (*init_finish_flag != BLOCK_INIT_FINISH_MAGIC_NUM) {
+        auto portPoolData = allocator.allocate(sizeof(PortPoolData), alignof(PortPoolData));
+        m_portPoolData = new (portPoolData) PortPoolData;
+        *init_finish_flag = BLOCK_INIT_FINISH_MAGIC_NUM;
+        LogInfo() << "PortPoolMemoryBlock Init Memory Finish.";
+    } else {
+        auto portPoolData = allocator.allocate(sizeof(PortPoolData), alignof(PortPoolData));
+        m_portPoolData = (PortPoolData*)(portPoolData);
+        LogInfo() << "PortPoolMemoryBlock Reuse Existed Memory.";
+    }
+
+    LogInfo() << "PortPoolMemoryBlock"
+              << " publisher port size=" 
+              << m_portPoolData->m_publisherPortMembers.size()
+              << " subscriber port size="
+              << m_portPoolData->m_subscriberPortMembers.size();
 }
 
 void PortPoolMemoryBlock::destroy() noexcept

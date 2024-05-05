@@ -106,13 +106,15 @@ class SharedMemory
 
     friend class SharedMemoryBuilder;
 
+    // reset will drop the already created share memory file handler
+    // only called in exit logic;
+    void reset() noexcept;
   private:
     SharedMemory(const Name_t& name, const int handle, const bool hasOwnership) noexcept;
 
     bool unlink() noexcept;
     bool close() noexcept;
     void destroy() noexcept;
-    void reset() noexcept;
 
     static SharedMemoryError errnoToEnum(const int32_t errnum) noexcept;
 

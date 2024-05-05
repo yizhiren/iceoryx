@@ -232,11 +232,9 @@ inline bool PortIntrospection<PublisherPort, SubscriberPort>::PortData::updateSu
 }
 
 template <typename PublisherPort, typename SubscriberPort>
-inline bool PortIntrospection<PublisherPort, SubscriberPort>::PortData::addPublisher(
+inline bool PortIntrospection<PublisherPort, SubscriberPort>::PortData::addPublisherNoLock(
     typename PublisherPort::MemberType_t& port) noexcept
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-
     auto service = port.m_serviceDescription;
     auto uniqueId = port.m_uniqueId;
 
@@ -292,11 +290,33 @@ inline bool PortIntrospection<PublisherPort, SubscriberPort>::PortData::addPubli
 }
 
 template <typename PublisherPort, typename SubscriberPort>
-inline bool PortIntrospection<PublisherPort, SubscriberPort>::PortData::addSubscriber(
-    typename SubscriberPort::MemberType_t& portData) noexcept
+inline bool PortIntrospection<PublisherPort, SubscriberPort>::PortData::addPublisher(
+    typename PublisherPort::MemberType_t& port) noexcept
 {
     std::lock_guard<std::mutex> lock(m_mutex);
 
+    return addPublisherNoLock(port);
+}
+
+template <typename PublisherPort, typename SubscriberPort>
+inline bool PortIntrospection<PublisherPort, SubscriberPort>::PortData::addPublisherIfNotExist(
+    typename PublisherPort::MemberType_t& port) noexcept
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    auto service = port.m_serviceDescription;
+    auto iter = m_publisherMap.find(service);
+    if (iter != m_publisherMap.end())
+    {
+        return true;
+    }
+
+    return addPublisherNoLock(port);
+}
+
+template <typename PublisherPort, typename SubscriberPort>
+inline bool PortIntrospection<PublisherPort, SubscriberPort>::PortData::addSubscriberNoLock(
+    typename SubscriberPort::MemberType_t& portData) noexcept
+{
     auto service = portData.m_serviceDescription;
     auto uniqueId = portData.m_uniqueId;
 
@@ -344,6 +364,30 @@ inline bool PortIntrospection<PublisherPort, SubscriberPort>::PortData::addSubsc
     }
 
     return true;
+}
+
+template <typename PublisherPort, typename SubscriberPort>
+inline bool PortIntrospection<PublisherPort, SubscriberPort>::PortData::addSubscriber(
+    typename SubscriberPort::MemberType_t& portData) noexcept
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    return addSubscriberNoLock(portData);
+}
+
+template <typename PublisherPort, typename SubscriberPort>
+inline bool PortIntrospection<PublisherPort, SubscriberPort>::PortData::addSubscriberIfNotExist(
+    typename SubscriberPort::MemberType_t& portData) noexcept
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    auto service = portData.m_serviceDescription;
+    auto iter = m_connectionMap.find(service);
+    if (iter != m_connectionMap.end())
+    {
+        return true;
+    }
+
+    return addSubscriberNoLock(portData);
 }
 
 template <typename PublisherPort, typename SubscriberPort>
@@ -643,9 +687,23 @@ PortIntrospection<PublisherPort, SubscriberPort>::addPublisher(typename Publishe
 
 template <typename PublisherPort, typename SubscriberPort>
 inline bool
+PortIntrospection<PublisherPort, SubscriberPort>::addPublisherIfNotExist(typename PublisherPort::MemberType_t& port) noexcept
+{
+    return m_portData.addPublisherIfNotExist(port);
+}
+
+template <typename PublisherPort, typename SubscriberPort>
+inline bool
 PortIntrospection<PublisherPort, SubscriberPort>::addSubscriber(typename SubscriberPort::MemberType_t& port) noexcept
 {
     return m_portData.addSubscriber(port);
+}
+
+template <typename PublisherPort, typename SubscriberPort>
+inline bool
+PortIntrospection<PublisherPort, SubscriberPort>::addSubscriberIfNotExist(typename SubscriberPort::MemberType_t& port) noexcept
+{
+    return m_portData.addSubscriberIfNotExist(port);
 }
 
 template <typename PublisherPort, typename SubscriberPort>

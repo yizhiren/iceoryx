@@ -86,6 +86,12 @@ cxx::vector<T*, Capacity> FixedPositionContainer<T, Capacity>::content() noexcep
     return returnValue;
 }
 
+template <typename T, uint64_t Capacity>
+size_t FixedPositionContainer<T, Capacity>::size() noexcept
+{
+    return m_data.size();
+}
+
 } // namespace roudi
 } // namespace iox
 

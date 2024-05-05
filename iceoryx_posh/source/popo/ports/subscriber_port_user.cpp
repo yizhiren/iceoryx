@@ -74,6 +74,12 @@ void SubscriberPortUser::releaseChunk(const mepoo::ChunkHeader* const chunkHeade
     m_chunkReceiver.release(chunkHeader);
 }
 
+void SubscriberPortUser::releaseChunkTo(const mepoo::ChunkHeader* const chunkHeader, 
+    mepoo::SharedChunk& toChunk) noexcept
+{
+    m_chunkReceiver.releaseTo(chunkHeader, toChunk);
+}
+
 void SubscriberPortUser::releaseQueuedChunks() noexcept
 {
     m_chunkReceiver.clear();

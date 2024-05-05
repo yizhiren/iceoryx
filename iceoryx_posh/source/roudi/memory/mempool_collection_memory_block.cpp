@@ -16,7 +16,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "iceoryx_posh/internal/roudi/memory/mempool_collection_memory_block.hpp"
-
+#include "iceoryx_posh/internal/log/posh_logging.hpp"
 #include "iceoryx_posh/internal/mepoo/memory_manager.hpp"
 
 #include "iceoryx_hoofs/cxx/algorithm.hpp"
@@ -39,24 +39,34 @@ MemPoolCollectionMemoryBlock::~MemPoolCollectionMemoryBlock() noexcept
 
 uint64_t MemPoolCollectionMemoryBlock::size() const noexcept
 {
-    return cxx::align(static_cast<uint64_t>(sizeof(mepoo::MemoryManager)), mepoo::MemPool::CHUNK_MEMORY_ALIGNMENT)
+    return cxx::align(static_cast<uint64_t>(sizeof(size_t)), mepoo::MemPool::CHUNK_MEMORY_ALIGNMENT)
+           + cxx::align(static_cast<uint64_t>(sizeof(mepoo::MemoryManager)), mepoo::MemPool::CHUNK_MEMORY_ALIGNMENT)
            + mepoo::MemoryManager::requiredFullMemorySize(m_memPoolConfig);
 }
 
 uint64_t MemPoolCollectionMemoryBlock::alignment() const noexcept
 {
-    // algorithm::align doesn't like constexpr values
-    auto memPoolAlignment = mepoo::MemPool::CHUNK_MEMORY_ALIGNMENT;
-    return algorithm::max(static_cast<uint64_t>(alignof(mepoo::MemoryManager)), memPoolAlignment);
+    return algorithm::max(
+        static_cast<uint64_t>(alignof(mepoo::MemoryManager)), 
+        static_cast<uint64_t>(alignof(size_t)), 
+        mepoo::MemPool::CHUNK_MEMORY_ALIGNMENT);
 }
 
 void MemPoolCollectionMemoryBlock::onMemoryAvailable(cxx::not_null<void*> memory) noexcept
 {
     posix::Allocator allocator(memory, size());
-    auto memoryManager = allocator.allocate(sizeof(mepoo::MemoryManager), alignof(mepoo::MemoryManager));
-    m_memoryManager = new (memoryManager) mepoo::MemoryManager;
-
-    m_memoryManager->configureMemoryManager(m_memPoolConfig, allocator, allocator);
+    auto init_finish_flag = (size_t*)allocator.allocate(sizeof(size_t), alignof(size_t));
+    if (*init_finish_flag != BLOCK_INIT_FINISH_MAGIC_NUM) {
+        auto memoryManager = allocator.allocate(sizeof(mepoo::MemoryManager), alignof(mepoo::MemoryManager));
+        m_memoryManager = new (memoryManager) mepoo::MemoryManager;
+        m_memoryManager->configureMemoryManager(m_memPoolConfig, allocator, allocator);
+        *init_finish_flag = BLOCK_INIT_FINISH_MAGIC_NUM;
+        LogInfo() << "MemPoolCollectionMemoryBlock Init Memory Finish.";
+    } else {
+        auto memoryManager = allocator.allocate(sizeof(mepoo::MemoryManager), alignof(mepoo::MemoryManager));
+        m_memoryManager = (mepoo::MemoryManager*)(memoryManager);   
+        LogInfo() << "MemPoolCollectionMemoryBlock Reuse Existed Memory.";
+    }
 }
 
 void MemPoolCollectionMemoryBlock::destroy() noexcept

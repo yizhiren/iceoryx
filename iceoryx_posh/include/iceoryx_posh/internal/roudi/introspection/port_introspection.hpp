@@ -144,10 +144,20 @@ class PortIntrospection
         /// @return returns false if the port could not be added and true otherwise
         bool addPublisher(typename PublisherPort::MemberType_t& port) noexcept;
 
+        /// @brief add a publisher port to be tracked by introspection
+        /// @param[in] port to be added
+        /// @return returns false if the port could not be added and true otherwise
+        bool addPublisherIfNotExist(typename PublisherPort::MemberType_t& port) noexcept;
+
         /// @brief add a subscriber port to be tracked by introspection
         /// @param[in] portData to be added
         /// @return returns false if the port could not be added and true otherwise
         bool addSubscriber(typename SubscriberPort::MemberType_t& portData) noexcept;
+
+        /// @brief add a subscriber port to be tracked by introspection
+        /// @param[in] portData to be added
+        /// @return returns false if the port could not be added and true otherwise
+        bool addSubscriberIfNotExist(typename SubscriberPort::MemberType_t& portData) noexcept;
 
         /// @brief remove a publisher port from introspection
         /// @param[in] port publisher port to be removed
@@ -212,6 +222,16 @@ class PortIntrospection
         void setNew(bool value) noexcept;
 
       private:
+        /// @brief add a publisher port to be tracked by introspection
+        /// @param[in] port to be added
+        /// @return returns false if the port could not be added and true otherwise
+        bool addPublisherNoLock(typename PublisherPort::MemberType_t& port) noexcept;
+
+        /// @brief add a subscriber port to be tracked by introspection
+        /// @param[in] portData to be added
+        /// @return returns false if the port could not be added and true otherwise
+        bool addSubscriberNoLock(typename SubscriberPort::MemberType_t& portData) noexcept;
+
         using PublisherContainer = FixedSizeContainer<PublisherInfo, MAX_PUBLISHERS>;
         using ConnectionContainer = FixedSizeContainer<ConnectionInfo, MAX_SUBSCRIBERS>;
 
@@ -252,10 +272,20 @@ class PortIntrospection
     /// @return returns false if the port could not be added and true otherwise
     bool addPublisher(typename PublisherPort::MemberType_t& port) noexcept;
 
+    /// @brief add a publisher port to be tracked by introspection
+    /// @param[in] port to be added
+    /// @return returns false if the port could not be added and true otherwise
+    bool addPublisherIfNotExist(typename PublisherPort::MemberType_t& port) noexcept;
+
     /// @brief add a subscriber port to be tracked by introspection
     /// @param[in] port to be added
     /// @return returns false if the port could not be added and true otherwise
     bool addSubscriber(typename SubscriberPort::MemberType_t& port) noexcept;
+
+    /// @brief add a subscriber port to be tracked by introspection
+    /// @param[in] port to be added
+    /// @return returns false if the port could not be added and true otherwise
+    bool addSubscriberIfNotExist(typename SubscriberPort::MemberType_t& port) noexcept;
 
     /// @brief remove a publisher port from introspection
     /// @param[in] port publisher port to be removed

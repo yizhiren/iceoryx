@@ -49,6 +49,8 @@ class SharedChunk
 
     ChunkManagement* release() noexcept;
 
+    uint64_t getUseCount() noexcept;
+
     bool operator==(const SharedChunk& rhs) const noexcept;
     /// @todo use the newtype pattern to avoid the void pointer
     bool operator==(const void* const rhs) const noexcept;

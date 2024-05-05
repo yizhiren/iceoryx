@@ -106,7 +106,7 @@ class PoshRuntimeImpl : public PoshRuntime
 
     mutable posix::mutex m_appIpcRequestMutex{false};
 
-    IpcRuntimeInterface m_ipcChannelInterface;
+    IpcRuntimeInterfaceWrapper m_ipcChannelInterface;
     cxx::optional<SharedMemoryUser> m_ShmInterface;
 
     void sendKeepAliveAndHandleShutdownPreparation() noexcept;

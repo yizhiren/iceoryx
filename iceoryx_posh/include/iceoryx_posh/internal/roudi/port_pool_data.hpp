@@ -48,6 +48,8 @@ class FixedPositionContainer
 
     cxx::vector<T*, Capacity> content() noexcept;
 
+    size_t size() noexcept;
+
   private:
     cxx::vector<cxx::optional<T>, Capacity> m_data;
 };

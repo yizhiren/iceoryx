@@ -48,6 +48,7 @@ class Allocator
     /// @note May terminate if out of memory or finalizeAllocation() was called before
     void* allocate(const uint64_t size, const uint64_t alignment) noexcept;
 
+    void changeStartAddress(void* const startAddress) noexcept;
   protected:
     friend class SharedMemoryObject;
     void finalizeAllocation() noexcept;

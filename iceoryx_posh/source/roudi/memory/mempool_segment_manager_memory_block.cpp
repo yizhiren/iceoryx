@@ -35,21 +35,34 @@ MemPoolSegmentManagerMemoryBlock::~MemPoolSegmentManagerMemoryBlock() noexcept
 
 uint64_t MemPoolSegmentManagerMemoryBlock::size() const noexcept
 {
-    return cxx::align(static_cast<uint64_t>(sizeof(mepoo::SegmentManager<>)), mepoo::MemPool::CHUNK_MEMORY_ALIGNMENT)
+    return cxx::align(static_cast<uint64_t>(sizeof(size_t)), mepoo::MemPool::CHUNK_MEMORY_ALIGNMENT)
+           + cxx::align(static_cast<uint64_t>(sizeof(mepoo::SegmentManager<>)), mepoo::MemPool::CHUNK_MEMORY_ALIGNMENT)
            + mepoo::SegmentManager<>::requiredManagementMemorySize(m_segmentConfig);
 }
 
 uint64_t MemPoolSegmentManagerMemoryBlock::alignment() const noexcept
 {
-    return algorithm::max(static_cast<uint64_t>(alignof(mepoo::SegmentManager<>)),
-                          mepoo::MemPool::CHUNK_MEMORY_ALIGNMENT);
+    return algorithm::max(
+        static_cast<uint64_t>(alignof(mepoo::SegmentManager<>)),
+        static_cast<uint64_t>(alignof(size_t)),
+        mepoo::MemPool::CHUNK_MEMORY_ALIGNMENT);
 }
 
 void MemPoolSegmentManagerMemoryBlock::onMemoryAvailable(cxx::not_null<void*> memory) noexcept
 {
     posix::Allocator allocator(memory, size());
-    auto segmentManager = allocator.allocate(sizeof(mepoo::SegmentManager<>), alignof(mepoo::SegmentManager<>));
-    m_segmentManager = new (segmentManager) mepoo::SegmentManager<>(m_segmentConfig, &allocator);
+    auto init_finish_flag = (size_t*)allocator.allocate(sizeof(size_t), alignof(size_t));
+    if (*init_finish_flag != BLOCK_INIT_FINISH_MAGIC_NUM) {
+        auto segmentManager = allocator.allocate(sizeof(mepoo::SegmentManager<>), alignof(mepoo::SegmentManager<>));
+        m_segmentManager = new (segmentManager) mepoo::SegmentManager<>(m_segmentConfig, &allocator);
+        *init_finish_flag = BLOCK_INIT_FINISH_MAGIC_NUM;
+        LogInfo() << "MemPoolSegmentManagerMemoryBlock Init Memory Finish.";
+    } else {
+        auto segmentManager = allocator.allocate(sizeof(mepoo::SegmentManager<>), alignof(mepoo::SegmentManager<>));
+        m_segmentManager = (mepoo::SegmentManager<>*)(segmentManager); 
+        m_segmentManager->reopenSegmentShareMemory();
+        LogInfo() << "MemPoolSegmentManagerMemoryBlock Reuse Existed Memory.";
+    }
 }
 
 void MemPoolSegmentManagerMemoryBlock::destroy() noexcept

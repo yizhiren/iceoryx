@@ -72,6 +72,12 @@ class SubscriberPortUser : public BasePort
     /// @param[in] chunkHeader, pointer to the ChunkHeader to release
     void releaseChunk(const mepoo::ChunkHeader* const chunkHeader) noexcept;
 
+    /// @brief Release a chunk that was obtained with tryGetChunk
+    /// @param[in] chunkHeader, pointer to the ChunkHeader to release
+    /// @param[in] toChunk, receive the released chunk
+    void releaseChunkTo(const mepoo::ChunkHeader* const chunkHeader,
+        mepoo::SharedChunk& toChunk) noexcept;
+
     /// @brief Release all the chunks that are currently queued up.
     void releaseQueuedChunks() noexcept;
 

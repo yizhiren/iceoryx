@@ -26,6 +26,9 @@ namespace iox
 {
 namespace roudi
 {
+
+const size_t BLOCK_INIT_FINISH_MAGIC_NUM = 0xFAF1FAF2FAF3FAF4;
+
 /// @brief The MemoryBlock is a container for general purpose memory. It is used to request some memory from a
 /// MemoryProvider, which can be POSIX SHM, the stack or something completely different. To be able to use the
 /// container, some functions need to be implemented. For most use cases the GenericMemoryBlock can be used, which is a

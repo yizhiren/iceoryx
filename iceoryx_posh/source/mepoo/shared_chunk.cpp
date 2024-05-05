@@ -144,5 +144,14 @@ ChunkManagement* SharedChunk::release() noexcept
     return returnValue;
 }
 
+uint64_t SharedChunk::getUseCount() noexcept
+{
+    if (nullptr == m_chunkManagement) {
+        return 0;
+    }
+
+    return m_chunkManagement->m_referenceCounter.load(); 
+}
+
 } // namespace mepoo
 } // namespace iox

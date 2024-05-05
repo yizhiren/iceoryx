@@ -23,6 +23,12 @@
 #include "iceoryx_posh/mepoo/memory_info.hpp"
 #include "iceoryx_posh/mepoo/mepoo_config.hpp"
 
+#ifdef REUSE_ICEORYX_SHM_FILE
+#define ME_POOL_OPEN_MODE OPEN_OR_CREATE
+#else
+#define ME_POOL_OPEN_MODE PURGE_AND_CREATE
+#endif
+
 namespace iox
 {
 namespace mepoo
@@ -72,7 +78,7 @@ inline SharedMemoryObjectType MePooSegment<SharedMemoryObjectType, MemoryManager
         SharedMemoryObjectType::create(writerGroup.getName(),
                                        MemoryManager::requiredChunkMemorySize(mempoolConfig),
                                        posix::AccessMode::READ_WRITE,
-                                       posix::OpenMode::PURGE_AND_CREATE,
+                                       posix::OpenMode::ME_POOL_OPEN_MODE,
                                        BASE_ADDRESS_HINT,
                                        cxx::perms::owner_read | cxx::perms::owner_write | cxx::perms::group_read
                                            | cxx::perms::group_write)
@@ -117,6 +123,12 @@ template <typename SharedMemoryObjectType, typename MemoryManagerType>
 inline uint64_t MePooSegment<SharedMemoryObjectType, MemoryManagerType>::getSegmentId() const noexcept
 {
     return m_segmentId;
+}
+
+template <typename SharedMemoryObjectType, typename MemoryManagerType>
+inline void MePooSegment<SharedMemoryObjectType, MemoryManagerType>::reopenShareMemory() noexcept
+{
+    m_sharedMemoryObject.reopen();
 }
 
 template <typename SharedMemoryObjectType, typename MemoryManagerType>

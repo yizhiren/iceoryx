@@ -181,6 +181,18 @@ inline void ChunkSender<ChunkSenderDataType>::release(const mepoo::ChunkHeader* 
 }
 
 template <typename ChunkSenderDataType>
+inline mepoo::SharedChunk ChunkSender<ChunkSenderDataType>::releaseLastChunk() noexcept
+{
+    return  getMembers()->m_lastChunkUnmanaged.releaseToSharedChunk();
+}
+
+template <typename ChunkSenderDataType>
+inline uint64_t ChunkSender<ChunkSenderDataType>::sendChunk(mepoo::SharedChunk chunk) noexcept
+{
+    return this->deliverToAllStoredQueues(chunk);
+}
+ 
+template <typename ChunkSenderDataType>
 inline uint64_t ChunkSender<ChunkSenderDataType>::send(mepoo::ChunkHeader* const chunkHeader) noexcept
 {
     uint64_t numberOfReceiverTheChunkWasDelivered{0};

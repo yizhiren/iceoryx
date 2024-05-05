@@ -60,6 +60,11 @@ class UntypedPublisherImpl : public BasePublisherType
     ///
     void publish(void* const userPayload) noexcept;
 
+    /// @brief Publish the provided memory chunk.
+    uint64_t publish(mepoo::SharedChunk chunk) noexcept;
+
+    mepoo::SharedChunk takeLastChunk() noexcept;
+
     ///
     /// @brief Releases the ownership of the chunk provided by the user-payload pointer.
     /// @param userPayload pointer to the user-payload of the chunk to be released

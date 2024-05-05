@@ -48,6 +48,16 @@ inline void SegmentManager<SegmentType>::createSegment(const SegmentConfig::Segm
 }
 
 template <typename SegmentType>
+void SegmentManager<SegmentType>::reopenSegmentShareMemory() noexcept
+{
+    auto iter = m_segmentContainer.begin();
+    while(iter != m_segmentContainer.end()) {
+        iter->reopenShareMemory();
+        iter ++;
+    }
+}
+
+template <typename SegmentType>
 inline typename SegmentManager<SegmentType>::SegmentMappingContainer
 SegmentManager<SegmentType>::getSegmentMappings(const posix::PosixUser& user) noexcept
 {

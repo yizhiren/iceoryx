@@ -45,6 +45,7 @@ class MePooSegment
     MemoryManagerType& getMemoryManager() noexcept;
 
     uint64_t getSegmentId() const noexcept;
+    void reopenShareMemory() noexcept;
 
   protected:
     SharedMemoryObjectType createSharedMemoryObject(const MePooConfig& mempoolConfig,

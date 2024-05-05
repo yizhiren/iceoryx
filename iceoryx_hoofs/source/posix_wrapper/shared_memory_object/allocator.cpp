@@ -65,6 +65,11 @@ void* Allocator::allocate(const uint64_t size, const uint64_t alignment) noexcep
     return static_cast<void*>(l_returnValue);
 }
 
+void Allocator::changeStartAddress(void* const startAddress) noexcept
+{
+    m_startAddress = static_cast<byte_t*>(startAddress);
+}
+
 void Allocator::finalizeAllocation() noexcept
 {
     m_allocationFinalized = true;

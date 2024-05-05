@@ -67,6 +67,13 @@ class PublisherPortUser : public BasePort
     /// @param[in] chunkHeader, pointer to the ChunkHeader to free
     void releaseChunk(mepoo::ChunkHeader* const chunkHeader) noexcept;
 
+    /// @brief take last chunk and then manage it by caller
+    mepoo::SharedChunk takeLastChunk() noexcept;
+
+    /// @brief Send an allocated chunk to all connected subscriber ports
+    /// @param[in] chunk, the Chunk to send
+    uint64_t sendChunk(mepoo::SharedChunk chunk) noexcept;
+
     /// @brief Send an allocated chunk to all connected subscriber ports
     /// @param[in] chunkHeader, pointer to the ChunkHeader to send
     void sendChunk(mepoo::ChunkHeader* const chunkHeader) noexcept;
